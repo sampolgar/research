@@ -11,19 +11,25 @@ b = 7   #
 G = (3, 6)  # Base point
 n = 19  # Order of G
 
+# a, m, g
+# -12 17 -1
+# 0 17 17
+# -3 17 -1
+
 
 def mod_inv(a, m):
     print(a, m)
+    a = a % m  # convert to positive
     g, x, y = extended_gcd(a, m)
     if g != 1:
-        print(a, m, g)
-        return None  # Modular inverse does not exist
+        print("Modular inverse does not exist, numbers aren't coprime a, m, g", a, m, g)
+        return None  # Modular inverse does not exist, numbers aren't coprime
     else:
-        # print(a, x, m)
         return x % m
 
 
 def extended_gcd(a, b):
+    print("ab is ", a, b)
     if a == 0:
         return b, 0, 1
     else:
@@ -64,8 +70,12 @@ def point_mul(k, P, p, a):
     return R
 
 
-# Key Generation
+# Key Generation. Select a random d between 1 and n -1
+# d must be coprime to the order
 d = random.randint(1, n-1)
+
 # create public key = d * Generator Point
 Q = point_mul(d, G, p, a)
 print(Q)
+
+# print("gcd", d, n, "=", gcd(-3, 17))
