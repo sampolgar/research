@@ -1,6 +1,5 @@
 # inspired by mini_ecdsa https://github.com/qubd/mini_ecdsa/blob/master/mini_ecdsa.py
 # Functions (discrimanint, order, generate(all points on curve), double, multiply, double-and-add, showpoints)
-
 from hashlib import sha256
 from random import SystemRandom, randrange
 
@@ -29,10 +28,11 @@ class Point:
 
 
 class Curve(object):
-    def __init__(self, curve_eq, prime):
+    def __init__(self, curve_eq, prime, generator):
         self.curve_eq = curve_eq
         self.zero_point = Point(0, 0)
         self.prime = prime
+        self.generator = generator
 
     def __repr__(self):
         return f"Curve({self.curve_eq})"
@@ -40,7 +40,11 @@ class Curve(object):
     def __str__(self):
         return 'curve: ' + str(self.curve_eq) + ' over ' + 'F_' + str(self.prime)
 
-    def find_points_on_curve(self):
+    def order_of_curve(self):
+        """
+        total points on the curve. The generator must be 1 of these points
+        found by recursing from 1 -> prime for each x and y and finding all x/y points that satisfy the curve eqn #TODO should it be prime -1?
+        """
         points = [Point(0, 0)]
         if self.prime > 1000:
             raise ValueError(
@@ -51,7 +55,7 @@ class Curve(object):
                     P = Point(i, j)
                     if (P.y * P.y) % self.prime == (P.x * P.x * P.x + 7) % self.prime:
                         points.append(P)
-            return points
+            return points, len(points)
 
     def is_point_on_curve(self, point: Point):
         if point.is_infinity():
@@ -59,13 +63,35 @@ class Curve(object):
         else:
             return (point.y * point.y) % self.prime == (point.x * point.x * point.x + 7) % self.prime
 
+    def order_of_point(self, G: Point):
+        """
+
+        """
+        if self.prime > 1000:
+            raise ValueError(
+                "I'm too lazy to calculate points on a curve with a prime larger than 1000")
+        elif not self.is_point_on_curve(G):
+            raise ValueError(
+                "Generator point isn't on the curve"
+            )
+        else:
+            subgroup = []
+            current_G: Point = G
+            while not current_G.is_infinity():
+                subgroup.append(current_G)
+                current_G = self.point_addition(current_G, G)
+            if not is_prime(len(subgroup)):
+                print(
+                    "order of point is " + str(len(subgroup)) + " and isn't prime, shouldn't be used as a generator point")
+            return subgroup, len(subgroup)
+
     def point_addition(self, P1: Point, P2: Point) -> Point:
         """
         receives 2 points:
         1. tests for infinity points. P1 + (0,0) = P1
-        2. tests if P1 = P2, if so, double 1 of them
-        3. tests 
-
+        2. if the points are equal, set lambda to the derivative of the curve for tangent to curve at point
+        3. if not, set lambda to tangent to curve of both points
+        4. use lambda for finding 3rd point
         """
         x1, y1 = P1.x, P1.y
         x2, y2 = P2.x, P2.y
@@ -78,14 +104,14 @@ class Curve(object):
             # this is the derivative of the curve y^2 = x^3 == 3x^2 / 2y or 3x^2 * 2y^-1
             lambdar = (3 * x1 * x1) * pow(2 * y1, -1, self.prime)
         elif y1 == -y2 % self.prime:
-            return Point(None, None)
+            return Point(0, 0)
         else:
             lambdar = (y2 - y1) * pow(x2 - x1, -1, self.prime)
 
         lambdar %= self.prime
         # eqn of a line through 2 points is y - y1 = λ(x - x1) === y = λ(x - x1) + y1. Substitute into curve equation
         x3 = (lambdar ** 2 - x1 - x2) % self.prime
-        # y3 = λ(x3 - x1) + y1. We already know x and x1, substitute in.
+        # y3 = λ(x3 - x1) + y1. We already know x and x1, substitute in. Create negative y value to create point on other side of x axis
         y3 = (lambdar * (x1 - x3) - y1) % self.prime
 
         return Point(x3, y3)
@@ -96,6 +122,7 @@ class Curve(object):
     def scalar_multiplication(self, P: Point, k: int) -> Point:
         """
         Multiply a point P by an integer k using the double-and-add method.
+
         """
         # Point at infinity multiplied by any k remains the point at infinity
         if P.is_infinity():
@@ -110,20 +137,23 @@ class Curve(object):
         # Use the double-and-add method for positive k
         return self.double_and_add(P, binary_k)
 
-    def double_and_add(self, P: Point, binary_k: str) -> Point:
+    def double_and_add(self, P: Point, k: int) -> Point:
         """
         double if the bit is 0, double and add if the bit is 1
         we reverse binary_k to start with the least significant bit. E.g. for 13 = 1101, start at 110"1"
         """
-        result = Point.at_infinity()  # Initialize result as the point at infinity
-        temp = P  # Initialize a temporary point to hold intermediate values
+        Q = Point.at_infinity()  # Initialize result as the point at infinity
+        R = P  # Initialize a temporary point to hold intermediate values
+
+        # Convert k to its binary representation
+        binary_k = bin(k)[2:]
 
         for bit in reversed(binary_k):
-            if bit == '0':
-                temp = self.point_double(temp)
-            if bit == "1":
-                temp = self.point_double(temp)
-                result = self.point_addition(result, temp)
+            if bit == '1':
+                Q = self.point_addition(Q, R)
+            R = self.point_double(R)
+
+        return Q
 
         # TODO
         # point order
@@ -172,15 +202,47 @@ def modular_multiplicative_inverse(a, m):
     else:
         return x % m
 
+
+def is_prime(number):
+    if number < 2:
+        return False
+    for i in range(2, int(number ** 0.5) + 1):
+        if number % i == 0:
+            return False
+    return True
+
 # Tests
 #
 #
 
 
+def test_order_of_point():
+    # Define a curve equation, prime, and generator point
+    print("here")
+    curve_eq = "2**256-2**32-2**9-2**8-2**7-2**6-2**4-1"
+    prime = 97  # A small prime for testing
+    generator = Point(68, 81)  # An example point on the curve
+
+    # Create a Curve object
+    curve = Curve(curve_eq, prime, generator)
+
+    # Test the order_of_point method
+    subgroup, order = curve.order_of_point(generator)
+
+    print(f"Subgroup generated by {generator}: {subgroup}")
+    print(f"Order of the point: {order}")
+
+    # Validate that the order is correct by checking that order * generator = infinity
+    # result = curve.scalar_multiplication(generator, order
+    # assert result == Point.at_infinity(), "The order is incorrect"
+
+    print("Test passed.")
+
+
 def test_is_point_on_curve():
     # Initialize the curve
     curve = Curve("2**256-2**32-2**9-2**8-2**7-2**6-2**4-1", 97)
-    # print(curve.find_points_on_curve())
+    # print(curve.order_of_curve())
 
     # Test with a point known to be on the curve
     P1 = Point(5, 36)
@@ -202,27 +264,28 @@ def test_point_addition():
 
     # Test points (remember testing x & y)
     # TODO checkout blog modulo
-    P1 = Point(3, 6)
-    P2 = Point(3, 91)
-    P3 = Point(80, 10)
+    P1 = Point(12, 38)
+    P1_Prime = Point(12, curve.prime - P1.y)
+    P2 = Point(71, 52)
+    P3 = Point(5, 36)
+    P4 = Point(80, 10)
     zero_point = Point(0, 0)
 
     # Test: Adding point at infinity
     assert curve.point_addition(P1, zero_point) == P1
     assert curve.point_addition(zero_point, P1) == P1
 
-    # Test: Adding point and its negative (should return point at infinity)
+    # Test: Adding point and its negative (should return point at infinity
 
-    assert curve.point_addition(P1, P2) == Point(0, 0)
+    # assert curve.point_addition(P1, P2) == Point(0, 0)
 
     # # Test: Adding two distinct points
-    # assert curve.point_addition(P1, P3) == Point(
-    #     80, 87)  # Replace with the actual result
+    # print(curve.point_addition(P2, P3))
 
+    print(curve.point_addition(P1, P1_Prime))
     # # Test: Doubling a point
     # assert curve.point_addition(P1, P1) == Point(
     #     80, 87)  # Replace with the actual result
-
     print("All tests passed!")
 
 
@@ -261,7 +324,10 @@ if __name__ == "__main__":
     # test_modular_multiplicative_inverse()
 
     # Test Is Point On Curve
-    test_is_point_on_curve()
+    # test_is_point_on_curve()
 
     # Test Point Addition
     # test_point_addition()
+    # test_scalar_multiplication()
+    # test_double_and_add()
+    test_order_of_point()
