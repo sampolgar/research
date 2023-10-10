@@ -1,5 +1,4 @@
 # inspired by mini_ecdsa https://github.com/qubd/mini_ecdsa/blob/master/mini_ecdsa.py
-# Functions (discrimanint, order, generate(all points on curve), double, multiply, double-and-add, showpoints)
 from hashlib import sha256
 from random import SystemRandom, randrange
 
@@ -28,11 +27,10 @@ class Point:
 
 
 class Curve(object):
-    def __init__(self, curve_eq, prime, generator):
+    def __init__(self, curve_eq, prime):
         self.curve_eq = curve_eq
         self.zero_point = Point(0, 0)
         self.prime = prime
-        self.generator = generator
 
     def __repr__(self):
         return f"Curve({self.curve_eq})"
@@ -40,13 +38,25 @@ class Curve(object):
     def __str__(self):
         return 'curve: ' + str(self.curve_eq) + ' over ' + 'F_' + str(self.prime)
 
+    def set_generator(self, point: Point):
+        self.generator = point
+
+    def is_point_on_curve(self, point: Point):
+        """
+        substitute x, y coordinates into curve eqn
+        """
+        if point.is_infinity():
+            return True
+        else:
+            return (point.y * point.y) % self.prime == (point.x * point.x * point.x + 7) % self.prime
+
     def order_of_curve(self):
         """
         total points on the curve. The generator must be 1 of these points
         found by recursing from 1 -> prime for each x and y and finding all x/y points that satisfy the curve eqn #TODO should it be prime -1?
         """
         points = [Point(0, 0)]
-        if self.prime > 1000:
+        if self.prime > 3000:
             raise ValueError(
                 "I'm too lazy to calculate points on a curve with a prime larger than 1000")
         else:
@@ -55,19 +65,13 @@ class Curve(object):
                     P = Point(i, j)
                     if (P.y * P.y) % self.prime == (P.x * P.x * P.x + 7) % self.prime:
                         points.append(P)
-            return points, len(points)
-
-    def is_point_on_curve(self, point: Point):
-        if point.is_infinity():
-            return True
-        else:
-            return (point.y * point.y) % self.prime == (point.x * point.x * point.x + 7) % self.prime
+            return points
 
     def order_of_point(self, G: Point):
         """
-
+        test cyclic subgroup of a point.
         """
-        if self.prime > 1000:
+        if self.prime > 3000:
             raise ValueError(
                 "I'm too lazy to calculate points on a curve with a prime larger than 1000")
         elif not self.is_point_on_curve(G):
@@ -81,9 +85,28 @@ class Curve(object):
                 subgroup.append(current_G)
                 current_G = self.point_addition(current_G, G)
             if not is_prime(len(subgroup)):
-                print(
-                    "order of point is " + str(len(subgroup)) + " and isn't prime, shouldn't be used as a generator point")
-            return subgroup, len(subgroup)
+                print("subgroup not prime, can't use in ecc")
+                return subgroup
+
+    def get_best_generator_point(self) -> Point:
+        """
+        given a curve, what's the best generator point (largest order)
+        """
+        print(self)
+        best_generators = []
+        all_points = self.order_of_curve()
+        for i, point in enumerate(all_points):
+            subgroup_length = len(self.order_of_point(point))
+            print("Point: ", point, " subgroup length: ", subgroup_length)
+            if is_prime(subgroup_length):
+                best_generators.append((i, subgroup_length))
+
+        sorted_best_generators = sorted(
+            best_generators, key=lambda x: x[1], reverse=True)
+        if not sorted_best_generators:
+            raise ValueError("No prime subgroups found")
+        best_generator_array_pos = sorted_best_generators[0][0]
+        return all_points[best_generator_array_pos]
 
     def point_addition(self, P1: Point, P2: Point) -> Point:
         """
@@ -101,7 +124,7 @@ class Curve(object):
         elif P2.is_infinity():
             return P1
         elif P1.x == P2.x and P1.y == P2.y:
-            # this is the derivative of the curve y^2 = x^3 == 3x^2 / 2y or 3x^2 * 2y^-1
+            # this is the derivative of the curve y^2 = x^3 + 7 == 3x^2 / 2y or 3x^2 * 2y^-1
             lambdar = (3 * x1 * x1) * pow(2 * y1, -1, self.prime)
         elif y1 == -y2 % self.prime:
             return Point(0, 0)
@@ -216,6 +239,15 @@ def is_prime(number):
 #
 
 
+def find_best_generator_point():
+    curve_eq = "2**256-2**32-2**9-2**8-2**7-2**6-2**4-1"
+    prime = 97  # A small prime for testing
+    generator = Point(68, 81)  # An example point on the curve
+    curve = Curve(curve_eq, prime, generator)
+
+    curve.get_best_generator_point()
+
+
 def test_order_of_point():
     # Define a curve equation, prime, and generator point
     print("here")
@@ -225,12 +257,13 @@ def test_order_of_point():
 
     # Create a Curve object
     curve = Curve(curve_eq, prime, generator)
+    print(curve)
 
     # Test the order_of_point method
-    subgroup, order = curve.order_of_point(generator)
+    subgroup = curve.order_of_point(generator)
 
     print(f"Subgroup generated by {generator}: {subgroup}")
-    print(f"Order of the point: {order}")
+    print(f"Order of the point: {len(subgroup)}")
 
     # Validate that the order is correct by checking that order * generator = infinity
     # result = curve.scalar_multiplication(generator, order
@@ -241,12 +274,19 @@ def test_order_of_point():
 
 def test_is_point_on_curve():
     # Initialize the curve
+    generator = Point(68, 81)
     curve = Curve("2**256-2**32-2**9-2**8-2**7-2**6-2**4-1", 97)
+
     # print(curve.order_of_curve())
 
     # Test with a point known to be on the curve
-    P1 = Point(5, 36)
+    P1 = Point(68, 81)
     assert curve.is_point_on_curve(P1) == True
+
+    print(curve.order_of_curve())
+    print(len(curve.order_of_curve()))
+    # print(curve.generator)
+    print(curve.order_of_point(generator))
 
     # # Test with a point known to not be on the curve
     P2 = Point(3, 7)
@@ -330,4 +370,6 @@ if __name__ == "__main__":
     # test_point_addition()
     # test_scalar_multiplication()
     # test_double_and_add()
-    test_order_of_point()
+    # test_order_of_point()
+    test_is_point_on_curve()
+    # find_best_generator_point()
