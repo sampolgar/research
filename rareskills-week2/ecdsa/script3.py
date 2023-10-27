@@ -67,6 +67,7 @@ class Curve(object):
                         points.append(P)
             return points
 
+    # ?? check 
     def order_of_point(self, G: Point):
         """
         test cyclic subgroup of a point.
@@ -138,6 +139,10 @@ class Curve(object):
         y3 = (lambdar * (x1 - x3) - y1) % self.prime
 
         return Point(x3, y3)
+    
+
+    # //TODO Shoof
+
 
     def point_double(self, P: Point) -> Point:
         return self.point_addition(P, P)
@@ -145,7 +150,6 @@ class Curve(object):
     def scalar_multiplication(self, P: Point, k: int) -> Point:
         """
         Multiply a point P by an integer k using the double-and-add method.
-
         """
         # Point at infinity multiplied by any k remains the point at infinity
         if P.is_infinity():
@@ -160,6 +164,7 @@ class Curve(object):
         # Use the double-and-add method for positive k
         return self.double_and_add(P, binary_k)
 
+    # precompute ??
     def double_and_add(self, P: Point, k: int) -> Point:
         """
         double if the bit is 0, double and add if the bit is 1
@@ -178,12 +183,6 @@ class Curve(object):
 
         return Q
 
-        # TODO
-        # point order
-        # point double
-        # point multiplication
-        #
-
 
 # ECDSA Utils
 # (keygen, sign, verify, hash, truncate)
@@ -196,6 +195,15 @@ def hash(message):
 # Mathematics
 #
 #
+
+
+# 2 ways to find the modulo inverse
+# 1 is you flip y, if you don't know the discrete log of. Discrete log of 5G is 5 ()
+# dlog is 420G
+# 420G = (x, y), (x, y^-1) 
+# negative 
+# 
+
 def extended_euclidean(a, b):
     """
     Computes gcd(a, b) and Bezout's coefficients x, y: ax + by = gcd(a, b).
