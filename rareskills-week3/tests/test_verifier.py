@@ -1,31 +1,27 @@
 from py_ecc.bn128 import G1, multiply, add
-from ape import convert
-
-
-def test_verifier(acct1):
-    assert acct1.balance > 0
 
 
 def test_ecadd(acct1, verifier_contract):
     res = add(G1, G1)
-    print(type(G1[0]))
-    # x1 = G1[0]
-    x1 = convert(G1[0], int)
-    assert verifier_contract.add(G1[0], G1[1], G1[0], G1[1]) == res
-    assert verifier_contract.add(G1[0], G1[1], G1[0], G1[1]) == res
-    print("hello")
+    res = (int(res[0]), int(res[1]))
+    print("res: ", res)
+
+    G1X = int(G1[0])
+    G1Y = int(G1[1])
+    addres = verifier_contract.add(G1X, G1Y, G1X, G1Y)
+    addres = (int(addres[0]), int(addres[1]))
+    print("addres: ", addres)
+    assert addres == res
 
 
-def test(verifier_contract):
-    print("verifier_contract", verifier_contract.test(2))
-    assert verifier_contract.test(1) == 1
+def test_ecmul(verifier_contract):
+    res = multiply(G1, 2)
+    res = (int(res[0]), int(res[1]))
+    print("res: ", res)
 
-# function add(uint256 x1, uint256 y1, uint256 x2, uint256 y2) public view returns (uint256 x, uint256 y) {
-#     (bool ok, bytes memory result) = address(6).staticcall(abi.encode(x1, y1, x2, y2));
-#     require(ok, "add failed");
-#     (x, y) = abi.decode(result, (uint256, uint256));
-# }
-
-    # function test(uint256 x1) public view returns (uint256 x) {
-    #     x = x1;
-    # }
+    G1X = int(G1[0])
+    G1Y = int(G1[1])
+    mulres = verifier_contract.mul(G1X, G1Y, 2)
+    mulres = (int(mulres[0]), int(mulres[1]))
+    print("mulres: ", mulres)
+    assert mulres == res

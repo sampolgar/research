@@ -14,7 +14,7 @@ contract VERIFIER {
         (x, y) = abi.decode(result, (uint256, uint256));
     }
 
-    function test(uint256 x1) public view returns (uint256 x) {
-        x = x1;
-    }
+    
+
+
 }
