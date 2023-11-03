@@ -3,3 +3,4 @@ name: simple-verifier
 plugins:
   - name: solidity
   - name: foundry
+  # - name: ethereum
