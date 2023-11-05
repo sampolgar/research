@@ -11,4 +11,4 @@ dependencies:
 
 solidity:
   import_remapping:
-    - "@witnet=witnet/"
+    - "@witnet=witnet/master"

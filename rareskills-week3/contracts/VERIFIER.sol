@@ -4,16 +4,32 @@ pragma solidity ^0.8.19;
 
 // import "@elliptic-curve-solidity/EllipticCurve.sol";
 // import "./EllipticCurve.sol";
-// import "@witnet/EllipticCurve.sol";
+import "@witnet/EllipticCurve.sol";
 
 contract Verifier {
-    function add(uint256 x1, uint256 y1, uint256 x2, uint256 y2) public view returns (uint256 x, uint256 y) {
+    // @constant = curve order
+    uint256 CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+
+    /// @dev ECPoint addition
+    /// @param x1 ECPoint1 x
+    /// @param y1 ECPoint1 y
+    /// @param x2 ECPoint2 x
+    /// @param y2 ECPoint2 y
+    /// @return x addition of x1 and x2 from precompile address 6 ECPoint x
+    /// @return y addition of y1 and y2 from precompile address 6 ECPoint y
+    function add(uint256 x1, uint256 y1, uint256 x2, uint256 y2) internal view returns (uint256 x, uint256 y) {
         (bool ok, bytes memory result) = address(6).staticcall(abi.encode(x1, y1, x2, y2));
         require(ok, "add failed");
         (x, y) = abi.decode(result, (uint256, uint256));
     }
 
-    function mul(uint256 x1, uint256 y1, uint256 scalar) public view returns (uint256 x, uint256 y) {
+    /// @dev ECPoint scalar multiplication using precompile 7
+    /// @param x1 ECPoint x
+    /// @param y1 ECPoint y
+    /// @param scalar is scalar multiple
+    /// @return x ECPoint x
+    /// @return y ECPoint y
+    function mul(uint256 x1, uint256 y1, uint256 scalar) internal view returns (uint256 x, uint256 y) {
         (bool ok, bytes memory result) = address(7).staticcall(abi.encode(x1, y1, scalar));
         require(ok, "mul failed");
         (x, y) = abi.decode(result, (uint256, uint256));
@@ -23,7 +39,7 @@ contract Verifier {
     /// @param _x The number
     /// @param _pp The modulus
     /// @return q such that x*q = 1 (mod _pp)
-    function invMod(uint256 _x, uint256 _pp) public pure returns (uint256) {
+    function invMod(uint256 _x, uint256 _pp) internal pure returns (uint256) {
         require(_x != 0 && _x != _pp && _pp != 0, "Invalid number");
         uint256 q = 0;
         uint256 newT = 1;
@@ -43,23 +59,28 @@ contract Verifier {
         uint256 y;
     }
 
+    /// @notice Verifies the prover  knows 2 numbers num, den that add together to secret input ECPoint A + ECPoint B
+    /// @param A EC Point A, dlog of [a]
+    /// @param B EC Point B, dlog of [b]
+    /// @param num = numerator
+    /// @param den = denominator
+    /// @return verified = return true if ECPoint A + ECPoint B = G1 * num / den
     function rationalAdd(ECPoint calldata A, ECPoint calldata B, uint256 num, uint256 den)
         public
         view
         returns (bool verified)
     {
-        // use precompile to add points
-        (uint256 x1, uint256 y1) = add(A.x, A.y, B.x, B.y);
+        require(den != 0, "denominator can't be 0");
 
-        // to calculate G1 * num/den, change den into multiplicative inverse i.e. pow(den, -1, curve_order)
-        uint256 curve_order = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-        uint256 denInv = EllipticCurve.invMod(den, curve_order);
-        uint256 scalar = num * denInv;
-        (uint256 x2, uint256 y2) = mul(1, 2, scalar);
+        //LHS = add ECPoints A, B
+        (uint256 LHSx, uint256 LHSy) = add(A.x, A.y, B.x, B.y);
 
-        require(x1 == x2, "x1 x2 failed");
-        require(y1 == y2, "y1 y2 failed");
-        if (x1 != x2 && y1 != y2) return false;
+        //RHS = num * pow(den, -1, curve_order)
+        uint256 rhsScalar = mulmod(num, invMod(den, CURVE_ORDER), CURVE_ORDER);
+        (uint256 RHSx, uint256 RHSy) = mul(1, 2, rhsScalar);
+
+        require(LHSx == RHSx, "x eq failed");
+        require(LHSy == RHSy, "y eq failed");
         return true;
     }
 }
