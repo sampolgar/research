@@ -16,12 +16,11 @@ Cargo.lock
 mini_ecdsa/
 */mini_ecdsa
 
-*/.build
+*.build
 __pycache__/
 
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
 *$py.class
 
