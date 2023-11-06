@@ -35,25 +35,6 @@ contract Verifier {
         (x, y) = abi.decode(result, (uint256, uint256));
     }
 
-    /// @dev Modular euclidean inverse of a number (mod p).
-    /// @param _x The number
-    /// @param _pp The modulus
-    /// @return q such that x*q = 1 (mod _pp)
-    function invMod(uint256 _x, uint256 _pp) internal pure returns (uint256) {
-        require(_x != 0 && _x != _pp && _pp != 0, "Invalid number");
-        uint256 q = 0;
-        uint256 newT = 1;
-        uint256 r = _pp;
-        uint256 t;
-        while (_x != 0) {
-            t = r / _x;
-            (q, newT) = (newT, addmod(q, (_pp - mulmod(t, newT, _pp)), _pp));
-            (r, _x) = (_x, r - t * _x);
-        }
-
-        return q;
-    }
-
     struct ECPoint {
         uint256 x;
         uint256 y;
@@ -76,7 +57,7 @@ contract Verifier {
         (uint256 LHSx, uint256 LHSy) = add(A.x, A.y, B.x, B.y);
 
         //RHS = num * pow(den, -1, curve_order)
-        uint256 rhsScalar = mulmod(num, invMod(den, CURVE_ORDER), CURVE_ORDER);
+        uint256 rhsScalar = mulmod(num, EllipticCurve.invMod(den, CURVE_ORDER), CURVE_ORDER);
         (uint256 RHSx, uint256 RHSy) = mul(1, 2, rhsScalar);
 
         require(LHSx == RHSx, "x eq failed");
