@@ -91,13 +91,6 @@ contract Verifier {
     /// @param s ECPoints should be size n x 2. ECPoints (1,2) and (3,4) = [(1,2),(3,4)]
     /// @param o 1 x n matrix
     /// @return verified or not for zk matrix vector multiplication
-    /// @dev matrix multiplication of an n x n matrix of uint256 and a 1 x n matrix of points.
-    /// @dev It validates the claim that matrix Ms = o where o is a 1 x n matrix of uint256.
-    /// @param matrix of uint. For a 2 x 2 matrix [[1,2][3,4]] = [1,2,3,4]
-    /// @param n size of matrix 2 x 2 matrix, n = 2
-    /// @param s ECPoints should be size n x 2. ECPoints (1,2) and (3,4) = [(1,2),(3,4)]
-    /// @param o 1 x n matrix
-    /// @return verified or not for zk matrix vector multiplication
     function matmul(uint256[] calldata matrix, uint256 n, ECPoint[] calldata s, uint256[] calldata o)
         public
         view
