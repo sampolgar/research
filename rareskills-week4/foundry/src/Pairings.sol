@@ -52,12 +52,17 @@ contract Pairings {
     }
 
     function run3(uint256[18] memory input) public view returns (bool) {
+        uint256 inputSize = 28;
+        bool success;
+        uint256[1] memory out;
+
         assembly {
-            // let success := staticcall(gas(), 0x08, input, 0x0180, input, 0x20)
-            let success := staticcall(gas(), 0x08, add(input, 0x20), mul(0x0180, 0x20), input, 0x20)
-            if success { return(input, 0x20) }
+            success := staticcall(sub(gas(), 2000), 8, add(input, 0x20), mload(inputSize), out, 0x20)
+            switch success
+            case 0 { invalid() }
         }
-        revert("Wrong pairing");
+        require(success, "pairing-opcode-failed");
+        return out[0] != 0;
     }
 
     struct ECPoint {
