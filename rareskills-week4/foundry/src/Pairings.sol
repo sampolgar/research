@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "forge-std/Test.sol";
+
 contract Pairings {
     // @constant = curve order
     uint256 CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
@@ -43,21 +45,23 @@ contract Pairings {
         revert("Wrong pairing");
     }
 
-    function run2(bytes calldata input) public view returns (bool) {
+    function verifyBytes(bytes calldata input) public view returns (bool) {
         // optional, the precompile checks this too and reverts (with no error) if false, this helps narrow down possible errors
         if (input.length % 192 != 0) revert("Points must be a multiple of 6");
         (bool success, bytes memory data) = address(0x08).staticcall(input);
+        console2.log("success: ", success);
+        console2.log("data: ", abi.decode(data, (bool)));
         if (success) return abi.decode(data, (bool));
         revert("Wrong pairing");
     }
 
     function run3(uint256[18] memory input) public view returns (bool) {
-        uint256 inputSize = 28;
+        uint256 inputSize = 18;
         bool success;
         uint256[1] memory out;
 
         assembly {
-            success := staticcall(sub(gas(), 2000), 8, add(input, 0x20), mload(inputSize), out, 0x20)
+            success := staticcall(sub(gas(), 2000), 0x08, add(input, 0x20), mload(inputSize), out, 0x20)
             switch success
             case 0 { invalid() }
         }
@@ -130,7 +134,3 @@ contract Pairings {
         return out[0] != 0;
     }
 }
-
-/// (4444740815889402603535294170722302758225367627362056425101568584910268024244, 10537263096529483164618820017164668921386457028564663708352735080900270541420)
-
-/// function verifyPairing(bytes calldata pairingInput, bytes calldata xInput) public view returns (bool) {}
