@@ -11,7 +11,7 @@ contract PairingsTest is Test {
   function setUp() public {
     pairings = new Pairings();
   }
-    
+
   function testEasy2Pairing() public view {
     // neg(G1)
     uint256 aG1_x = 1;
