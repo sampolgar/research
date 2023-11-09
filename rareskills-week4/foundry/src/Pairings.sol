@@ -22,12 +22,14 @@ contract Pairings {
     (x, y) = abi.decode(result, (uint256, uint256));
   }
 
-  /// @dev G1Point scalar multiplication using precompile 7
-  /// @param x1 G1Point x
-  /// @param y1 G1Point y
-  /// @param scalar is scalar multiple
-  /// @return x G1Point x
-  /// @return y G1Point y
+  /**
+   * @dev G1Point scalar multiplication using precompile 7
+   * @param x1 G1Point x
+   * @param y1 G1Point y
+   * @param scalar is scalar multiple
+   * @return x G1Point x
+   * @return y G1Point y
+   */
   function mul(uint256 x1, uint256 y1, uint256 scalar) internal view returns (uint256 x, uint256 y) {
     (bool ok, bytes memory result) = address(7).staticcall(abi.encode(x1, y1, scalar));
     require(ok, "mul failed");
@@ -35,12 +37,11 @@ contract Pairings {
   }
 
   /**
-   *  returns true if == 0,
-   *  returns false if != 0,
-   *  reverts with "Wrong pairing" if invalid pairing
+   *  @return true if pairing response from precompile = 0
+   *  @param input is a 12 length array of uint256
+   *  @dev structure of input is [G1x, G1y, G2x1, G2x2, G2y1, G2y2,...]
    */
-
-  function run(uint256[12] memory input) public view returns (bool) {
+  function verifyArrayInts(uint256[12] memory input) public view returns (bool) {
     for (uint256 i = 0; i < 12; i++) {
       console2.log("run: ", input[i]);
     }
@@ -52,6 +53,11 @@ contract Pairings {
     revert("Wrong pairing");
   }
 
+  /**
+   *  @return true if pairing response from precompile = 0
+   *  @param input is calldata bytes, length must modulo 192 because of 6 x 32 byte uint256 input
+   *  @dev structure of input is [G1x, G1y, G2x1, G2x2, G2y1, G2y2,...]
+   */
   function verifyBytes(bytes calldata input) public view returns (bool) {
     // optional, the precompile checks this too and reverts (with no error) if false, this helps narrow down possible errors
     if (input.length % 192 != 0) revert("Points must be a multiple of 6");
@@ -60,20 +66,6 @@ contract Pairings {
     console2.log("data: ", abi.decode(data, (bool)));
     if (success) return abi.decode(data, (bool));
     revert("Wrong pairing");
-  }
-
-  function run3(uint256[18] memory input) public view returns (bool) {
-    uint256 inputSize = 18;
-    bool success;
-    uint256[1] memory out;
-
-    assembly {
-      success := staticcall(sub(gas(), 2000), 0x08, add(input, 0x20), mload(inputSize), out, 0x20)
-      switch success
-      case 0 { invalid() }
-    }
-    require(success, "pairing-opcode-failed");
-    return out[0] != 0;
   }
 
   struct G1Point {
@@ -86,18 +78,26 @@ contract Pairings {
     uint256[2] y;
   }
 
+  /**
+   *  @return (uint256,uint256) the scalar multiplication and addition of x1G1, x2G1, x3G1
+   *  @param input is 3 scalars to be multiplied by G1 and added together
+   */
   function createX_1(uint256[] memory input) public view returns (uint256, uint256) {
     G1Point memory pointSummary;
 
     for (uint256 i = 0; i < input.length; i++) {
       //scalar mul G1 point with input
-      // add to point at i
       G1Point memory iteratorPoint;
       (iteratorPoint.x, iteratorPoint.y) = mul(1, 2, input[i]);
       (pointSummary.x, pointSummary.y) = add(pointSummary.x, pointSummary.y, iteratorPoint.x, iteratorPoint.y);
     }
     return (pointSummary.x, pointSummary.y);
   }
+
+  /**
+   *  @return true if pairing response from precompile = 0
+   *  @param A1, B2, C1, D2 is 2 G1 points, 2 G2 points to verify in pairing precompile
+   */
 
   function pairingVerifierSimple(G1Point memory A1, G2Point memory B2, G1Point memory C1, G2Point memory D2) public view returns (bool) {
     G1Point[2] memory p1 = [A1, C1];
@@ -106,7 +106,7 @@ contract Pairings {
     uint256 inputSize = 12;
     uint256[] memory input = new uint256[](inputSize);
 
-    // not sure why we do this?
+    // change G1 G2 points into input array of uint256
     for (uint256 i = 0; i < 2; i++) {
       uint256 j = i * 6;
       input[j + 0] = p1[i].x;
@@ -124,6 +124,7 @@ contract Pairings {
     uint256[1] memory out;
     bool success;
 
+    // use precompile 8
     assembly {
       success := staticcall(sub(gas(), 2000), 8, add(input, 0x20), mul(inputSize, 0x20), out, 0x20)
       // Use "invalid" to make gas estimation work
@@ -135,6 +136,11 @@ contract Pairings {
     return out[0] != 0;
   }
 
+  /**
+   *  @return true if pairing response from precompile = 0
+   *  @param A1, B2, C1, D2, E1, F2, G1, H2 is 4 G1 points, 4 G2 points to verify in pairing precompile
+   *  @dev note that A1 is already negated here
+   */
   function pairingVerifier8Point(G1Point memory A1, G2Point memory B2, G1Point memory C1, G2Point memory D2, G1Point memory E1, G2Point memory F2, G1Point memory G1, G2Point memory H2) public view returns (bool) {
     G1Point[4] memory p1 = [A1, C1, E1, G1];
     G2Point[4] memory p2 = [B2, D2, F2, H2];
@@ -167,39 +173,6 @@ contract Pairings {
     }
 
     require(success, "pairing-opcode-failed");
-    return out[0] != 0;
-  }
-
-  function pairingVerifier(G1Point memory A1, G2Point memory B2, G1Point memory Alpha1, G2Point memory Beta2, G1Point memory X1, G2Point memory Gamma2, G1Point memory C1, G2Point memory Delta2) public view returns (bool) {
-    G1Point[4] memory p1 = [A1, Alpha1, X1, C1];
-    G2Point[4] memory p2 = [B2, Beta2, Gamma2, Delta2];
-
-    uint256 inputSize = 24;
-    uint256[] memory input = new uint256[](inputSize);
-
-    // not sure why we do this?
-    for (uint256 i = 0; i < 4; i++) {
-      uint256 j = i * 6;
-      input[j + 0] = p1[i].x;
-      input[j + 1] = p1[i].y;
-      input[j + 2] = p2[i].x[0];
-      input[j + 3] = p2[i].x[1];
-      input[j + 4] = p2[i].y[0];
-      input[j + 5] = p2[i].y[1];
-    }
-
-    uint256[1] memory out;
-    bool success;
-
-    assembly {
-      success := staticcall(sub(gas(), 2000), 8, add(input, 0x20), mul(inputSize, 0x20), out, 0x20)
-      // Use "invalid" to make gas estimation work
-      switch success
-      case 0 { invalid() }
-    }
-
-    require(success, "pairing-opcode-failed");
-
     return out[0] != 0;
   }
 }
