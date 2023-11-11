@@ -63,7 +63,6 @@ def test_matrix_vector_multiplication_hard(verifier_contract):
     ]
     assert verifier_contract.matmul(matrix, n, s, o) == True
 
-
 # def test_matrix_vector_multiplication(verifier_contract):
 #     n = 3
 #     matrix = np.random.randint(100, size=(n, n))
