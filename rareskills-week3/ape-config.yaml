@@ -1,0 +1,14 @@
+name: simple-verifier
+
+plugins:
+  - name: solidity
+  - name: foundry
+
+dependencies:
+  - name: witnet
+    github: witnet/elliptic-curve-solidity
+    version: master
+
+solidity:
+  import_remapping:
+    - "@witnet=witnet/master"

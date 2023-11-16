@@ -1,0 +1,15 @@
+[profile.default]
+src = 'src'
+test = 'test'
+script = 'script'
+out = 'out'
+libs = ['lib']
+
+viaIR = true
+
+[fmt]
+line_length = 500
+tab_width = 2
+bracket_spacing = true
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
