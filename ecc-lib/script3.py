@@ -2,7 +2,6 @@
 from hashlib import sha256
 from random import SystemRandom, randrange
 
-
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -71,6 +70,7 @@ class Curve(object):
     def order_of_point(self, G: Point):
         """
         test cyclic subgroup of a point.
+        I don't think this works!!! I don't think it's needed?
         """
         if self.prime > 3000:
             raise ValueError(
@@ -139,9 +139,6 @@ class Curve(object):
         y3 = (lambdar * (x1 - x3) - y1) % self.prime
 
         return Point(x3, y3)
-    
-
-    # //TODO Shoof
 
 
     def point_double(self, P: Point) -> Point:
@@ -381,3 +378,8 @@ if __name__ == "__main__":
     # test_order_of_point()
     test_is_point_on_curve()
     # find_best_generator_point()
+
+
+
+    # //TODO Shoof
+    # TODO miller rabin pairing
