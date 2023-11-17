@@ -3,16 +3,15 @@ from py_ecc.bn128 import G1, add, multiply, curve_order
 import random
 import binascii
 
-# keccak256 = keccak.new(data=b'hello', digest_bits=256).digest()
-# print("Keccak256:", binascii.hexlify(keccak256))
-# Sigma Dlog
-
 def sigma_dlog():
-    (proof, A, K, c) = sigma_dlog_generate_proof()
-    print(verify_sigma_dlog(proof, A, K, c))
-
-
-def sigma_dlog_generate_proof():
+    """
+    sigma protocol to prove "I know the discrete log of a" i.e. [A] = aG
+    It's zero knowledge because the user is proving knowledge of a without revealing a
+    
+    In simple terms, prover hides a value with elliptic curve groups (scalar multiplication) a * G1 = A
+    given A, no one can find a (it's hard to find discrete log)
+    Prover(a, A)              Verifier(A)
+    """
     a = random.randint(0, curve_order)
     A = multiply(G1, a)
 
@@ -20,41 +19,71 @@ def sigma_dlog_generate_proof():
     k = random.randint(0, curve_order)
     K = multiply(G1, k)
 
+    # challenge from verifier
     c = random.randint(0, curve_order)
-
+    
+    # response to verifier
     s = (k + c * a) % curve_order
-    proof = multiply(G1, s)
-    return proof, A, K, c
-
-def verify_sigma_dlog(proof, A: G1, K: G1, c) -> bool:
-    assert proof == add(multiply(A, c), K)
-    return True
+    
+    # verifier computes
+    verifier_lhs = multiply(G1, s)
+    verifier_rhs = add(multiply(A, c), K)
+    assert verifier_lhs == verifier_rhs
+    print("passed verification")
 
 
 # Sigma Dlog Non-Interactive
-def sigma_dlog_noninteractive():
-    (proof, A, K, Hc_str) = sigma_dlog_noninteractive_generate()
-    print(verify_sigma_dlog_noninteractive(proof, A, K, Hc_str))
+def sigma_dlog_ni():
+    """
+    same sigma protocol, including fiat shamir of the random K
+    """
+    # Prover Computes
+    a = random.randint(0, curve_order)
+    A = multiply(G1, a)
 
-# best practice to hash the random value with statement 𝑔𝑟||𝑔𝑥 for strong fiat shamir
-# https://eprint.iacr.org/2016/771.pdf
-def sigma_dlog_noninteractive_generate():
+    k = random.randint(0, curve_order)
+    K = multiply(G1, k)
+
+    c_string = str(K)     # weak fiat shamir - hash random value
+    Hc_hex = keccak.new(data=c_string.encode('utf-8'), digest_bits=256).digest().hex()
+    Hc_int = int(Hc_hex, 16)
+    
+    # Prover sends s to verifier
+    s = (k + Hc_int * a) % curve_order
+
+    # verifier computes
+    verifier_lhs = multiply(G1, s)
+    verifier_rhs = add(multiply(A, Hc_int), K)
+    assert verifier_lhs == verifier_rhs
+    print("passed verification")
+
+def schnorr():
+    """
+    Signer(m,a,A)           Verifier(m,A)
+    Similar to sigma dlog, but with message m. 
+    """
+    # Signer computes
     a = random.randint(0, curve_order)
     A = multiply(G1, a)
 
     # random k, hidden K
     k = random.randint(0, curve_order)
     K = multiply(G1, k)
-    c_string = str(K)
-    Hc_str = keccak.new(data=c_string.encode('utf-8'), digest_bits=256).digest().hex()
-    print("Hc_str:", Hc_str)
-    s = (k + Hc_str * a) % curve_order
-    proof = multiply(G1, s)
-    return proof, A, K, Hc_str
 
-def verify_sigma_dlog_noninteractive(proof, A: G1, K: G1, Hc_str) -> bool:
-    assert proof == add(multiply(A, Hc_str), K)
-    return True
+    m = "hello world"
+    c_string = str(K) + m     # weak fiat shamir - hash random value
+    Hc_hex = keccak.new(data=c_string.encode('utf-8'), digest_bits=256).digest().hex()
+    Hc_int = int(Hc_hex, 16)
 
-sigma_dlog_noninteractive()
+    # Signer sends s to verifier
+    s = (k + Hc_int * a) % curve_order
+
+    # verifier computes
+    verifier_lhs = multiply(G1, s)
+    verifier_rhs = add(multiply(A, Hc_int), K)
+    print("passed verification")
+   
+
 # sigma_dlog()
+# sigma_dlog_ni()
+schnorr()
