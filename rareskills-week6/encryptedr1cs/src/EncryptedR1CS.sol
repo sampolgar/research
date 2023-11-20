@@ -9,6 +9,17 @@ contract EncryptedR1CS {
 
     uint256 CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
+    G2Point g2 = G2Point(
+        [
+            11559732032986387107991004021392285783925812861821192530917403151452391805634,
+            10857046999023057135944570762232829481370756359578518086990519993285655852781
+        ],
+        [
+            4082367875863433681332203403145435568316851327593401208105741076214120093531,
+            8495653923123431417604973247489272438418190587263600148770280649306958101930
+        ]
+    );
+
     /**
      * @dev G1Point addition
      *  @param x1 G1Point1 x
@@ -63,6 +74,26 @@ contract EncryptedR1CS {
     struct G2Point {
         uint256[2] x;
         uint256[2] y;
+    }
+
+    /* takes in 3 x matrix of uint256, 1 x array G1 points, 1 x array G2 points
+    *
+    */
+    function verifier(
+        uint256[4][2] memory matrixL,
+        uint256[4][2] memory matrixR,
+        uint256[4][2] memory matrixO,
+        G1Point[] memory g1Array,
+        G2Point[] memory g2Array
+    ) public view returns (bool) {
+        //loop through top array of matrixL, scale points in g1Array, then add them together
+        //repeat for 2nd matrix row
+        //I should now have L[sG1,sG1]
+        //repeat for G2 and matrixR
+        //I should now have L[sG2,sG2]
+        //repeat for G1 and matrix O
+        //I should now have O[sG1,sG1]
+        //do pairing operation with e(-L,R)+e(O,G2)
     }
 
     /**

@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from py_ecc.bn128 import FQ, FQP, G1, G2, add, multiply, neg, pairing, eq, is_inf, curve_order, field_modulus
 
 # this is the computation
 # we need to turn it into a circuit
@@ -13,12 +14,9 @@ def doubleOrSquare(x,y):
 print("doubleOrSquare(2,0)", doubleOrSquare(3,0))
 print("doubleOrSquare(2,1)", doubleOrSquare(3,1))
 
-# out = x^2y + 2x(1-y)... if y = 0, out = 2x. If y = 1, out = 2x. 
-# assert y == 0 or y == 1 <==> 0 = y(y-1) == constraint y = y * y
-
 # this is the circuit
 x = random.randint(1,1000)
-y = 0 # or y = 1
+y = 1 # or y = 1
 
 out = x * x * y + 2 * (1 - y)
 y = y * y
@@ -41,5 +39,13 @@ R = np.array([
     [0,0,0,1,0]]
 )
 
-result = O.dot(w) == np.multiply(L.dot(w), R.dot(w))
-assert result.all(), "result contains inequality"
+# loop these
+l = L.dot(w)
+r = R.dot(w)
+o = O.dot(w)
+
+for i in range(len(l)):
+    print("pairing(l[i],r[i])", i)
+    lhs = pairing(multiply(G2,l[i]),multiply(G1,r[i]))
+    rhs = pairing(G2,multiply(G1,o[i]))
+    assert eq(lhs,rhs), "result contains inequality"
