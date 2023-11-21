@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/console2.sol";
-import "forge-std/console.sol";
 
 contract Pairings {
   // @constant = curve order

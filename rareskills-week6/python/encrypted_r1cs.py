@@ -19,4 +19,5 @@ eq(pairing(Ri,Li), pairing(G2,Oi))
 Lii = multiply(G1,v1)
 Rii = multiply(G2,x)
 Oii = add(add(multiply(G1,curve_order-5),multiply(G1,curve_order-1)),G1)
+# test pairing
 eq(pairing(Rii,Lii),pairing(G2,Oii))
