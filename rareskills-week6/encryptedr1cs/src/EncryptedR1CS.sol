@@ -62,33 +62,12 @@ contract EncryptedR1CS {
     uint256[2] y;
   }
 
+  G2Point G2 = G2Point([11559732032986387107991004021392285783925812861821192530917403151452391805634, 10857046999023057135944570762232829481370756359578518086990519993285655852781], [4082367875863433681332203403145435568316851327593401208105741076214120093531, 8495653923123431417604973247489272438418190587263600148770280649306958101930]);
+
   /* takes in 3 x matrix of uint256, 1 x array G1 points, 1 x array G2 points
     *
     */
-  function verifier(uint256[4][2] memory matrixL, uint256[4][2] memory matrixR, uint256[4][2] memory matrixO, G1Point[4] memory g1Array) public view returns (bool) {
-    //loop through top array of matrixL, scale points in g1Array, then add them together
-    //repeat for 2nd matrix row
-    //I should now have L[sG1,sG1]
-    //repeat for G2 and matrixR
-    //I should now have L[sG2,sG2]
-    //repeat for G1 and matrix O
-    //I should now have O[sG1,sG1]
-    //do pairing operation with e(-L,R)+e(O,G2)
-    G2Point memory G2 = G2Point([11559732032986387107991004021392285783925812861821192530917403151452391805634, 10857046999023057135944570762232829481370756359578518086990519993285655852781], [4082367875863433681332203403145435568316851327593401208105741076214120093531, 8495653923123431417604973247489272438418190587263600148770280649306958101930]);
-    G1Point memory LiG1 = scaleAndAggregateMatrixG1(matrixL[0], g1Array);
-    console2.log("LiG1:", LiG1.x, LiG1.y);
-    G1Point memory LiiG1 = scaleAndAggregateMatrixG1(matrixL[1], g1Array);
-
-    G1Point memory RiG1 = scaleAndAggregateMatrixG1(matrixR[0], g1Array);
-    G1Point memory RiiG1 = scaleAndAggregateMatrixG1(matrixR[1], g1Array);
-    console2.log("RiG1:", RiG1.x, RiG1.y);
-
-    G1Point memory OiG1 = scaleAndAggregateMatrixG1(matrixO[0], g1Array);
-    G1Point memory OiiG1 = scaleAndAggregateMatrixG1(matrixO[1], g1Array);
-    G1Point memory negOiG1 = negate(OiG1);
-    G1Point memory negOiiG1 = negate(OiiG1);
-    console2.log("negOiiG1", negOiiG1.x, negOiiG1.y);
-
+  function pairing(G1Point[2] memory l, G2Point[2] memory r, G1Point[2] memory o) public view returns (bool) {
     bool x = pairingVerifier6Point(LiG1, G2, RiG1, G2, negOiG1, G2);
     console2.log(x);
     return true;
@@ -105,12 +84,11 @@ contract EncryptedR1CS {
     return g1Aggregate;
   }
 
+  // for (uint256 i = 0; i < input.length; i++) {
+  //   require(input[i] < CURVE_ORDER, "curve order size fail");
 
-    // for (uint256 i = 0; i < input.length; i++) {
-    //   require(input[i] < CURVE_ORDER, "curve order size fail");
-      
-    //   vk_x = Pairing.plus(vk_x, Pairing.scalar_mul(vk.IC[i + 1], input[i]));
-    // }
+  //   vk_x = Pairing.plus(vk_x, Pairing.scalar_mul(vk.IC[i + 1], input[i]));
+  // }
 
   /**
    *  @return true if pairing response from precompile = 0

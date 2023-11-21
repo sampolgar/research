@@ -13,6 +13,6 @@ i = add(multiply(X3, 1),multiply(neg(X2), 4))
 ii = add(multiply(X, 3),multiply(neg(G1), 1))
 rhs = add(i, ii)
 
-# right_hand_side = add(add(add(multiply(X3, 1),multiply(neg(X2), 4)),multiply(X, 3)),multiply(neg(G1), 1))
+right_hand_side = add(add(add(multiply(X3, 1),multiply(neg(X2), 4)),multiply(X, 3)),multiply(neg(G1), 1))
 
 assert eq(left_hand_side, rhs), "lhs ≠ rhs"
