@@ -1,15 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "forge-std/console2.sol";
-import "forge-std/Test.sol";
-import "../src/Pairings.sol";
+import { Test, console2 } from "forge-std/Test.sol";
+import { Pairings } from "../src/Pairings.sol";
 
 contract PairingsTest is Test {
   Pairings public pairings;
 
   function setUp() public {
     pairings = new Pairings();
+  }
+
+  struct G1Point {
+    uint256 x;
+    uint256 y;
+  }
+
+  struct G2Point {
+    uint256[2] x;
+    uint256[2] y;
   }
 
   function testEasy2Pairing() public view {
@@ -101,16 +110,6 @@ contract PairingsTest is Test {
 
     bool x = pairings.verifyBytes(pointsBytes);
     console2.log("result:", x);
-  }
-
-  struct G1Point {
-    uint256 x;
-    uint256 y;
-  }
-
-  struct G2Point {
-    uint256[2] x;
-    uint256[2] y;
   }
 
   function test2PairingPointObject() public view {

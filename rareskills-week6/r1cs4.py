@@ -23,7 +23,13 @@ kkii = multiply(G1,curve_order-1)
 kki = multiply(G1,curve_order-5)
 kk = add(add(G1,kki),kkii)
 
-print(i, "\n", ii, "\n", j, "\n",jj,"\n", k,"\n", kk)
+# print(i, "\n", ii, "\n", j, "\n",jj,"\n", k,"\n", kk)
+print("G1",i, "\n","G2", j, "\n", "G1",k,"\n","G2", G2)
+print("gap")
+print("G1",ii, "\n","G2", jj, "\n", "G1",kk,"\n","G2", G2)
+# print("gap")
+# print(ii, "\n", jj, "\n", kk,"\n", G2)
 
-eq(pairing(j,i), pairing(G2, k))
-eq(pairing(jj,ii), pairing(G2,kk))
+# eq(pairing(j,i), pairing(G2, k))
+
+# eq(pairing(jj,ii), pairing(G2,kk))
