@@ -7,4 +7,5 @@
     "editor.defaultFormatter": "JuanBlanco.solidity"
   },
   "solidity.formatter": "forge",
+  "solidity.defaultCompiler": "remote",
 }
