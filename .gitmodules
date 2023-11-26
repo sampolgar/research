@@ -1,3 +1,6 @@
 [submodule "rareskills-week6/encryptedr1cs/lib/forge-std"]
 	path = rareskills-week6/encryptedr1cs/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "rareskills-week7/foundry2/lib/forge-std"]
+	path = rareskills-week7/foundry2/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

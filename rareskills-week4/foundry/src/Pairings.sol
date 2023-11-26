@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.21;
 
-import "forge-std/console2.sol";
+import { console2 } from "forge-std/Test.sol";
 
 contract Pairings {
   // @constant = curve order
-
   uint256 CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
-  /// @dev G1Point addition
-  /// @param x1 G1Point1 x
-  /// @param y1 G1Point1 y
-  /// @param x2 G1Point2 x
-  /// @param y2 G1Point2 y
-  /// @return x addition of x1 and x2 from precompile address 6 G1Point x
-  /// @return y addition of y1 and y2 from precompile address 6 G1Point y
+  /**
+   * @dev G1Point addition
+   * @param x1 G1Point1 x
+   * @param y1 G1Point1 y
+   * @param x2 G1Point2 x
+   * @param y2 G1Point2 y
+   * @return x addition of x1 and x2 from precompile address 6 G1Point x
+   * @return y addition of y1 and y2 from precompile address 6 G1Point y
+   */
   function add(uint256 x1, uint256 y1, uint256 x2, uint256 y2) internal view returns (uint256 x, uint256 y) {
     (bool ok, bytes memory result) = address(6).staticcall(abi.encode(x1, y1, x2, y2));
     require(ok, "add failed");
