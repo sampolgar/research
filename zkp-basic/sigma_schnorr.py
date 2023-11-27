@@ -84,6 +84,6 @@ def schnorr():
     print("passed verification")
    
 
-# sigma_dlog()
-# sigma_dlog_ni()
+sigma_dlog()
+sigma_dlog_ni()
 schnorr()
