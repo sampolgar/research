@@ -5,6 +5,7 @@ pragma solidity ^0.8.19;
 // import "@elliptic-curve-solidity/EllipticCurve.sol";
 // import "./EllipticCurve.sol";
 import "@witnet/EllipticCurve.sol";
+import "hardhat/console.sol";
 
 contract Verifier {
     // @constant = curve order
