@@ -6,10 +6,3 @@ cli.js
 index.js
 coverage
 coverage.json
-
-rareskills-week4/foundry/test/Pairings.t.sol
-rareskills-week4/foundry/test/ECPairing.t.sol
-rareskills-week4/foundry/src/ECPairing.sol
-rareskills-week4/foundry/src/Pairings.sol
-rareskills-week6/encryptedr1cs/src/EncryptedR1CS.sol
-rareskills-week6/encryptedr1cs/test/EncryptedR1CS.t.sol
