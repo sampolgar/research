@@ -7,9 +7,7 @@ template Add() {
    signal input a[2];
    signal output c;
    c <== a[0] + a[1];
-   // out <== a[0] + a[1];
 }
 
 component main {public [a]}  = Add();
-
-// yarn test ./test/<TestName>.js
+// yarn test ./test/Add.js
