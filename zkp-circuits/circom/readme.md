@@ -46,3 +46,11 @@ py_ecc.bn128 Curve Order: 218882428718392752222464057452572750885483644004160343
 Underconstrained circuits
 https://eprint.iacr.org/2023/512.pdf
 One particularly dangerous problem that can arise in this context is that the circuit is underconstrained, meaning that multiple distinct outputs satisfy the equation for the same input value. In other words, a circuit is underconstrained if the equations do not specify a function. Intuitively, such circuits are problematic because there exist inputs for which it is possible for a malicious user to generate bogus witnesses, thereby causing the verifier to accept a proof that it should not.
+
+
+[INFO]  snarkJS: [ main.a[0] +21888242871839275222246405745257275088548364400416034343698204186575808495616main.a[1] ] * [ main.isz1.inv ] - [ 1 +21888242871839275222246405745257275088548364400416034343698204186575808495616main.interim1 ] = 0
+[INFO]  snarkJS: [ main.a[0] +21888242871839275222246405745257275088548364400416034343698204186575808495616main.a[1] ] * [ main.interim1 ] - [  ] = 0
+[INFO]  snarkJS: [ main.a[1] +21888242871839275222246405745257275088548364400416034343698204186575808495616main.a[2] ] * [ main.isz2.inv ] - [ 1 +21888242871839275222246405745257275088548364400416034343698204186575808495616main.interim2 ] = 0
+[INFO]  snarkJS: [ main.a[1] +21888242871839275222246405745257275088548364400416034343698204186575808495616main.a[2] ] * [ main.interim2 ] - [  ] = 0
+[INFO]  snarkJS: [ main.interim1 +main.interim2 ] * [ main.isz3.inv ] - [ 1 +21888242871839275222246405745257275088548364400416034343698204186575808495616main.c ] = 0
+[INFO]  snarkJS: [ main.interim1 +main.interim2 ] * [ main.c ] - [  ] = 0
