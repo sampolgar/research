@@ -7,7 +7,7 @@ template Public(){
     signal v;
     signal output out;
 
-    v <==a * b;
+    v <== a * b;
     out <== c * v;
 }
 

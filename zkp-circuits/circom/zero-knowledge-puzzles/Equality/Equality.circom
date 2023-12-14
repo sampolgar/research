@@ -2,26 +2,8 @@ pragma circom 2.1.4;
 
 // Input 3 values using 'a'(array of length 3) and check if they all are equal.
 // Return using signal 'c'.
-// include "comparators.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 
-template IsZero() {
-    signal input in;
-    signal output out;
-
-    signal inv;
-
-   // check if in is 0, if not it get's inverted. 
-   // if in is 0, inv is 0.
-    inv <-- in!=0 ? 1/in : 0; 
-
-   // if in is 0, -in*inv is 0 because inv is 0 and -in*inv = 0. out = 1
-   // if in isn't 0, inv is in inverted. so it's some number
-   // then out = some big number * -in (another big number) + 1
-    out <== -in*inv +1;
-
-   //  in * out === 0
-    in*out === 0;
-}
 
 template Equality() {
    signal input a[3];
