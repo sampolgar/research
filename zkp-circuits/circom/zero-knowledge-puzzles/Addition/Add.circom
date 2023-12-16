@@ -9,5 +9,5 @@ template Add() {
    c <== a[0] + a[1];
 }
 
-component main {public [a]}  = Add();
+component main = Add();
 // yarn test ./test/Add.js

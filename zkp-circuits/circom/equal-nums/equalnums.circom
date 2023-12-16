@@ -10,7 +10,6 @@ template EqualNums(){
 
     a ==> ise.in;
     c <== ise.out;
-    // ise.out ==> c;
 }
 
 component main = EqualNums();
@@ -27,7 +26,9 @@ component main = EqualNums();
 // -1 * a[0] + a[1] ] * [ c ] - [  ] = 0
 
 
+
 // Valid witness
+// Valid because out is 1
 // [
 //  "1",
 //  "1",
@@ -38,6 +39,7 @@ component main = EqualNums();
 
 
 // Invalid Witness
+// Invalid because out is 0?
 // [
 //  "1",
 //  "0",

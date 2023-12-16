@@ -8,10 +8,18 @@ pragma circom 2.1.4;
 
 // HINT:NEGATION
 
-template NotEqual() {
+include "../node_modules/circomlib/circuits/comparators.circom";
 
-    // Your code here.
-   
+template NotEqual() {
+    signal input a[2];
+    signal output c;
+
+    component ise = IsEqual();
+
+    a[0] ==> ise.in[0];
+    a[1] ==> ise.in[1];
+    
+    c <== 1 - ise.out;
 }
 
 component main = NotEqual();

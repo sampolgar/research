@@ -8,25 +8,32 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 template Equality() {
    signal input a[3];
    signal output c;
+
    signal interim1;
    signal interim2;
 
-   component isz1 = IsZero();
-   component isz2 = IsZero();
-   component isz3 = IsZero();
+   component ise1 = IsEqual();
+   component ise2 = IsEqual();
 
-   a[0] - a[1] ==> isz1.in;
-   isz1.out ==> interim1;
-   
-   a[1] - a[2] ==> isz2.in;
-   isz2.out ==> interim2;
+   // if interim1 is equal, interim1 is 
+   a[0] ==> ise1.in[0];
+   a[1] ==> ise1.in[1];
 
-   interim1 - interim2 ==> isz3.in;
-   isz3.out ==> c;
+   interim1 <== ise1.out;
+
+   a[1] ==> ise2.in[0];
+   a[1] ==> ise2.in[1];
+   interim2 <== ise2.out;
+
+   c <== interim1 * interim2;
 }
 
+component main = Equality();
 
-component main {public [a]} = Equality();
+//  [ -1 a[0] + a[1] ] * [ ise1.isz.inv ] - [ 1 + c ] = 0
+//    
+//  [ -1 a[0] + a[1] ] * [ c ] - [  ] = 0
+
 // yarn test ./test/Equality.js
 
 // component main = IsZero();
