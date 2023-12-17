@@ -1,5 +1,5 @@
-# zk-path
-Structure
-foldername = rareskills-week1, rareskills-week2
-`````````````
+Hi,
 
+This is mostly my playground for learning things and implementing cryptography.
+
+Let me know if you have any feedback for my work :)
