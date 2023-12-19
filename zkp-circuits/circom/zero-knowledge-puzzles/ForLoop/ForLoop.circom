@@ -1,13 +1,15 @@
 pragma circom 2.1.4;
 
-// Input : 'a',array of length 2 .
-// Output : 'c 
-// Using a forLoop , add a[0] and a[1] , 4 times in a row .
-
 template ForLoop() {
+    signal input a[2];
+    signal output c;
+    signal intermediate[4];
 
-// Your Code here..
-
+    intermediate[0] <== a[0] + a[1];
+    for(var i = 1; i < 4; i++){
+        intermediate[i] <== intermediate[i - 1] + a[0] + a[1];
+    }
+    c <== intermediate[3];
 }  
 
 component main = ForLoop();
