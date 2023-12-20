@@ -13,6 +13,7 @@ template poseidon() {
    b ==> array[1];
    c ==> array[2];
    d ==> array[3];
+   
    component poseidon = Poseidon(4);
 
    poseidon.inputs[0] <== array[0];

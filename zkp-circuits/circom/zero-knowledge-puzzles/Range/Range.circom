@@ -1,18 +1,30 @@
 pragma circom 2.1.4;
 
-// In this exercise , we will learn how to check the range of a private variable and prove that 
-// it is within the range . 
-
-// For example we can prove that a certain person's income is within the range
-// Declare 3 input signals `a`, `lowerbound` and `upperbound`.
-// If 'a' is within the range, output 1 , else output 0 using 'out'
-
-
 template Range() {
-    // your code here
-   
+    signal input a;
+    signal input lowerbound;
+    signal input upperbound;
+    signal output out;
+
+    signal i;
+    signal ii;
+    i <-- a > lowerbound ? 1 : 0;
+    ii <-- a < upperbound ? 1 : 0;
+    out <== i * ii;
 }
 
 component main  = Range();
 
+    // [ -1 * i ] * [ ii ] - [ -1 * out ] = 0
 
+
+    // non quadratic constraints not allowed
+    // var i = a > lowerbound ? 1 : 0;
+    // var ii = a < upperbound ? 1 : 0;
+    // out <== i * ii;
+
+
+    // works but no linear constraints, no non-linear constraints
+    // var i = a > lowerbound ? 1 : 0;
+    // var ii = a < upperbound ? 1 : 0;
+    // out <-- i * ii;
