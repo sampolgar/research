@@ -19,29 +19,15 @@ template Salt() {
     signal input b;
     signal input salt;
     signal output out;
-    // signal inputs[3];
-    // signal outputs[1];
-    // inputs[0] <== a;
-    // inputs[1] <== b;
-    // inputs[2] <== salt;
+    signal outputs[2];
 
-    component hash = MiMCSponge(3, 220, 1);
-    hash.nInputs[0] <== a;
-    hash.nInputs[1] <== b;
-    hash.nInputs[2] <== salt;
+    component hash = MiMCSponge(2, 220, 2);
 
-    // outputs[0] <== hash.outs;
-    out <== hash.outs;
-
-
+    hash.ins[0] <== a;
+    hash.ins[1] <== b;
+    hash.k <== salt;
+    out <== hash.outs[0];
+    
 }
 
 component main  = Salt();
-// By default all inputs are private in circom. We will not define any input as public 
-// because we want them to be a secret , at least in this case. 
-
-// There will be cases where some values will be declared explicitly public .
-
-
-
-
