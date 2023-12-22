@@ -2,7 +2,6 @@ pragma circom 2.1.4;
 
 include "../node_modules/circomlib/circuits/comparators.circom";
 
-
 /*
     Given a 4x4 sudoku board with array signal input "question" and "solution", check if the solution is correct.
 
@@ -73,6 +72,9 @@ template Sudoku () {
     3 === row4[3].out + row4[2].out + row4[1].out + row4[0].out; 
 
     // Write your solution from here.. Good Luck!
+    
+
+
     
     
    
