@@ -9,7 +9,7 @@ def sigma_dlog():
     It's zero knowledge because the user is proving knowledge of a without revealing a
     
     In simple terms, prover hides a value with elliptic curve groups (scalar multiplication) a * G1 = A
-    given A, no one can find a (it's hard to find discrete log)
+    given A, it's infeasable to find a (it's hard to find discrete log)
     Prover(a, A)              Verifier(A)
     """
     a = random.randint(0, curve_order)
@@ -22,7 +22,7 @@ def sigma_dlog():
     # challenge from verifier
     c = random.randint(0, curve_order)
     
-    # response to verifier
+    # provers response to verifier
     s = (k + c * a) % curve_order
     
     # verifier computes
@@ -81,6 +81,7 @@ def schnorr():
     # verifier computes
     verifier_lhs = multiply(G1, s)
     verifier_rhs = add(multiply(A, Hc_int), K)
+    assert(verifier_lhs == verifier_rhs)
     print("passed verification")
    
 
